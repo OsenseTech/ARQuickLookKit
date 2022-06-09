@@ -13,7 +13,8 @@ public class GestureHandler: NSObject {
     private let viewController: ARViewController
     private let gestures: [Gesture]
     
-    public enum Gesture {
+    @objc
+    public enum Gesture: Int {
         /// 點擊改變位置
         case tap
         
@@ -31,6 +32,18 @@ public class GestureHandler: NSObject {
         self.sceneView = sceneView
         self.viewController = viewController
         self.gestures = gestures
+        super.init()
+        
+        DispatchQueue.main.async {
+            self.setupGesture()
+        }
+    }
+    
+    @objc
+    public init(sceneView: ARSCNView, viewController: ARViewController) {
+        self.sceneView = sceneView
+        self.viewController = viewController
+        self.gestures = [.pan, .pinch]
         super.init()
         
         DispatchQueue.main.async {
@@ -314,7 +327,7 @@ public class GestureHandler: NSObject {
                                      z: result.worldTransform.columns.3.z)
     }
     
-    func addOrUpdateAnchor(for object: VirtualObject) {
+    public func addOrUpdateAnchor(for object: VirtualObject) {
         if let anchor = object.anchor {
             sceneView.session.remove(anchor: anchor)
         }

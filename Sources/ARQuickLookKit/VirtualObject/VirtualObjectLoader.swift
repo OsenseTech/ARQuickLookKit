@@ -7,7 +7,8 @@
 
 import SceneKit
 
-public class VirtualObjectLoader {
+@objc
+public class VirtualObjectLoader: NSObject {
     
     public enum LoadObjectError: Error {
         case sceneViewPrepareFailed
@@ -15,10 +16,12 @@ public class VirtualObjectLoader {
     
     private let sceneView: SCNSceneRenderer
     
-    public var loadedObjectTable: [String: Int] = [:]
+    var loadedObjectTable: [String: Int] = [:]
     
+    @objc
     public var loadedObjects: [VirtualObject] = []
     
+    @objc
     public init(sceneView: SCNSceneRenderer) {
         self.sceneView = sceneView
     }
@@ -44,7 +47,7 @@ public class VirtualObjectLoader {
         }
     }
     
-    private func loadObject(_ object: VirtualObject, loadedHandler: @escaping (Result<VirtualObject, LoadObjectError>) -> Void) {
+    public func loadObject(_ object: VirtualObject, loadedHandler: @escaping (Result<VirtualObject, LoadObjectError>) -> Void) {
         // Load the content into the reference node.
         DispatchQueue.global(qos: .userInitiated).async {
             object.load()

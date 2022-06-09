@@ -1,21 +1,31 @@
 //
-//  ARViewController.swift
+//  PositionHelper.swift
 //  
 //
-//  Created by 蘇健豪 on 2022/6/6.
+//  Created by 蘇健豪 on 2022/6/9.
 //
 
+import Foundation
 import ARKit
+import ARQuickLookKit
 
-@objc
-public protocol ARViewController: NSObjectProtocol {
-    var sceneView: ARSCNView { get set }
-    var virtualObjectLoader: VirtualObjectLoader { get set }
-    var gestureHandler: GestureHandler { get set }
-    var updateQueue: DispatchQueue { get set }
-}
-
-extension ARViewController {
+/// Only for ObjC to easily access these two func
+@objc public class PositionHelper: NSObject {
+    
+    private let virtualObjectLoader: VirtualObjectLoader
+    private let gestureHandler: GestureHandler
+    private let sceneView: ARSCNView
+    private let updateQueue: DispatchQueue
+    
+    @objc
+    public init(virtualObjectLoader: VirtualObjectLoader, gestureHandler: GestureHandler, sceneView: ARSCNView, updateQueue: DispatchQueue) {
+        self.virtualObjectLoader = virtualObjectLoader
+        self.gestureHandler = gestureHandler
+        self.sceneView = sceneView
+        self.updateQueue = updateQueue
+    }
+    
+    @objc
     public func autoPlace(_ object: VirtualObject, at anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
         guard object.parent == nil else { return }
@@ -28,6 +38,7 @@ extension ARViewController {
         place(object, at: position)
     }
     
+    @objc
     public func place(_ object: VirtualObject, at position: SCNVector3) {
         guard object.parent == nil else { return }
         
@@ -57,6 +68,4 @@ extension ARViewController {
             }
         }
     }
-    
 }
-

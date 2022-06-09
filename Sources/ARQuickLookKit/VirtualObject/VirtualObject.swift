@@ -8,6 +8,7 @@
 import SceneKit
 import ARKit
 
+@objc
 public class VirtualObject: SCNReferenceNode {
     
     /// The alignments that are allowed for a virtual object.
@@ -42,7 +43,7 @@ public class VirtualObject: SCNReferenceNode {
     
     /// Flag that indicates the associated anchor should be updated
     /// at the end of a pan gesture or when the object is repositioned.
-    var shouldUpdateAnchor = false
+    public var shouldUpdateAnchor = false
     
     func stopTrackedRaycast() {
         raycast?.stopTracking()
