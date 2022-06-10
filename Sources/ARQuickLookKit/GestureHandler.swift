@@ -10,7 +10,7 @@ import ARKit
 public class GestureHandler: NSObject {
     
     private let sceneView: ARSCNView
-    private let viewController: ARViewController
+    private let viewController: ARViewControllerProtocol
     private let gestures: [Gesture]
     
     public enum Gesture {
@@ -27,7 +27,7 @@ public class GestureHandler: NSObject {
         case pinch
     }
     
-    public init(sceneView: ARSCNView, viewController: ARViewController, gestures: [Gesture]) {
+    public init(sceneView: ARSCNView, viewController: ARViewControllerProtocol, gestures: [Gesture]) {
         self.sceneView = sceneView
         self.viewController = viewController
         self.gestures = gestures

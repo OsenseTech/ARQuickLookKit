@@ -1,5 +1,5 @@
 //
-//  ARViewController.swift
+//  ARViewControllerProtocol.swift
 //  
 //
 //  Created by 蘇健豪 on 2022/6/6.
@@ -7,14 +7,14 @@
 
 import ARKit
 
-public protocol ARViewController: AnyObject {
+public protocol ARViewControllerProtocol {
     var sceneView: ARSCNView { get set }
     var virtualObjectLoader: VirtualObjectLoader { get set }
     var gestureHandler: GestureHandler { get set }
     var updateQueue: DispatchQueue { get set }
 }
 
-extension ARViewController {
+extension ARViewControllerProtocol {
     public func autoPlace(_ object: VirtualObject, at anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
         guard object.parent == nil else { return }
