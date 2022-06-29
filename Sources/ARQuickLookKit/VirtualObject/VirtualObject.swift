@@ -44,6 +44,8 @@ public class VirtualObject: SCNReferenceNode {
     /// at the end of a pan gesture or when the object is repositioned.
     var shouldUpdateAnchor = false
     
+    public var isPlaced = false
+    
     func stopTrackedRaycast() {
         raycast?.stopTracking()
         raycast = nil
