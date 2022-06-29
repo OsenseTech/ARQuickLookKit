@@ -33,6 +33,10 @@ public class GestureHandler: NSObject {
         self.gestures = gestures
         super.init()
         
+        setup()
+    }
+    
+    public func setup() {
         DispatchQueue.main.async {
             self.setupGesture()
         }
