@@ -24,6 +24,10 @@ public class VirtualObjectLoader {
     }
     
     public func loadVirtualObject(_ object: VirtualObject, loadedHandler: @escaping (Result<VirtualObject, LoadObjectError>) -> Void) {
+        if object.isLoaded {
+            return loadedHandler(.success(object))
+        }
+        
         loadObject(object) { result in
             switch result {
                 case let .success(object):
