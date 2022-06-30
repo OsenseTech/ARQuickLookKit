@@ -30,15 +30,20 @@ extension ARViewControllerProtocol {
     public func place(_ object: VirtualObject, at position: SCNVector3) {
         guard object.parent == nil else { return }
         
-        if object.isLoaded {
-            setObject(object, position: position)
-        } else {
-            virtualObjectLoader.loadVirtualObject(object) { result in
-                if case .success(_) = result {
-                    setObject(object, position: position)
-                }
-            }
-        }
+        setObject(object, position: position)
+//        if let object = object as? VirtualReferenceObject {
+//            if object.isLoaded {
+//                setObject(object, position: position)
+//            } else {
+//                virtualObjectLoader.loadVirtualObject(object) { result in
+//                    if case .success(_) = result {
+//                        setObject(object, position: position)
+//                    }
+//                }
+//            }
+//        } else {
+//            setObject(object, position: position)
+//        }
         
         func setObject(_ object: VirtualObject, position: SCNVector3) {
             object.position = position

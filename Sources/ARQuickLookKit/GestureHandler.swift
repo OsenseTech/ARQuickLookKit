@@ -91,19 +91,20 @@ public class GestureHandler: NSObject {
         
         let touchLocation = sender.location(in: sceneView)
         
-        if object.isLoaded {
-            placeVirtualObject(object, at: touchLocation)
-        } else {
-            self.viewController.virtualObjectLoader.loadVirtualObject(object) { result in
-                switch result {
-                    case let .success(object):
-                        placeVirtualObject(object, at: touchLocation)
-                        
-                    case let .failure(error):
-                        print(error.localizedDescription)
-                }
-            }
-        }
+//        if case let object as? VirtualReferenceObject {
+//            self.viewController.virtualObjectLoader.loadVirtualObject(object) { result in
+//                switch result {
+//                    case let .success(object):
+//                        placeVirtualObject(object, at: touchLocation)
+//                        
+//                    case let .failure(error):
+//                        print(error.localizedDescription)
+//                }
+//            }
+//        } else {
+//            placeVirtualObject(object, at: touchLocation)
+//        }
+        placeVirtualObject(object, at: touchLocation)
         
         func placeVirtualObject(_ object: VirtualObject, at position: CGPoint) {
             object.stopTrackedRaycast()
