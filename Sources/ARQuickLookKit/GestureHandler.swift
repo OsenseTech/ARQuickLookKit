@@ -12,6 +12,7 @@ public class GestureHandler: NSObject {
     private let sceneView: ARSCNView
     private let viewController: ARViewControllerProtocol
     private let gestures: [Gesture]
+    public var disable: Bool = false
     
     public enum Gesture {
         /// 點擊改變位置
@@ -85,6 +86,7 @@ public class GestureHandler: NSObject {
     
     @objc
     private func handleTapGesture(_ sender: UITapGestureRecognizer) {
+        guard !disable else { return }
         guard let object = viewController.virtualObjectLoader.loadedObjects.last else { return }
         
         let touchLocation = sender.location(in: sceneView)
@@ -128,6 +130,8 @@ public class GestureHandler: NSObject {
     
     @objc
     private func didPan(_ gesture: ThresholdPanGesture) {
+        guard !disable else { return }
+        
         switch gesture.state {
             case .began:
                 // Check for an object at the touch location.
@@ -257,6 +261,7 @@ public class GestureHandler: NSObject {
      - Tag: didRotate */
     @objc
     private func didRotate(_ gesture: UIRotationGestureRecognizer) {
+        guard !disable else { return }
         guard gesture.state == .changed else { return }
         
         gestureEffectObject?.objectRotation -= Float(gesture.rotation)
@@ -272,6 +277,7 @@ public class GestureHandler: NSObject {
     
     @objc
     private func handlePinchGesture(_ gesture: UIPinchGestureRecognizer) {
+        guard !disable else { return }
         guard let object = gestureEffectObject else { return }
         
         switch gesture.state {
