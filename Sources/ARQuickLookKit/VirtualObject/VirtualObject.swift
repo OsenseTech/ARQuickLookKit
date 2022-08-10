@@ -8,58 +8,59 @@
 import SceneKit
 import ARKit
 
-public class VirtualObject: SCNReferenceNode {
+public class VirtualObject: SCNNode, VirtualObjectProtocol {
     
-    /// The alignments that are allowed for a virtual object.
-    var allowedAlignment: ARRaycastQuery.TargetAlignment {
-        .horizontal
-    }
+    public var allowedAlignment: ARRaycastQuery.TargetAlignment
     
-    /// Rotates the first child node of a virtual object.
-    /// - Note: For correct rotation on horizontal and vertical surfaces, rotate around
-    /// local y rather than world y.
-    var objectRotation: Float {
-        get {
-            if let node = childNodes.first {
-                return node.eulerAngles.y
-            } else {
-                return 0
-            }
-        }
-        
-        set (newValue) {
-            if let node = childNodes.first {
-                node.eulerAngles.y = newValue
-            }
-        }
-    }
+    public var anchor: ARAnchor?
     
-    /// The object's corresponding ARAnchor.
-    var anchor: ARAnchor?
+    public var raycast: ARTrackedRaycast?
     
-    /// The associated tracked raycast used to place this object.
-    var raycast: ARTrackedRaycast?
-    
-    /// Flag that indicates the associated anchor should be updated
-    /// at the end of a pan gesture or when the object is repositioned.
-    var shouldUpdateAnchor = false
+    public var shouldUpdateAnchor = false
     
     public var isPlaced = false
     
-    func stopTrackedRaycast() {
-        raycast?.stopTracking()
-        raycast = nil
+    public var objectType: ObjectType
+    
+    public init(geometry: SCNGeometry?, allowedAlignment: ARRaycastQuery.TargetAlignment, objectType: ObjectType = .object) {
+        self.allowedAlignment = allowedAlignment
+        self.objectType = objectType
+        super.init()
+        
+        self.geometry = geometry
     }
     
-    /// Returns a `VirtualObject` if one exists as an ancestor to the provided node.
-    static func existingObjectContainingNode(_ node: SCNNode) -> VirtualObject? {
-        if let virtualObjectRoot = node as? VirtualObject {
-            return virtualObjectRoot
-        }
-        
-        guard let parent = node.parent else { return nil }
-        
-        // Recurse up to check if the parent is a `VirtualObject`.
-        return existingObjectContainingNode(parent)
+    public init(allowedAlignment: ARRaycastQuery.TargetAlignment,
+                anchor: ARAnchor?,
+                raycast: ARTrackedRaycast?,
+                shouldUpdateAnchor: Bool,
+                isPlaced: Bool,
+                objectType: ObjectType) {
+        self.allowedAlignment = allowedAlignment
+        self.anchor = anchor
+        self.raycast = raycast
+        self.shouldUpdateAnchor = shouldUpdateAnchor
+        self.isPlaced = isPlaced
+        self.objectType = objectType
+        super.init()
     }
+    
+    public override func copy(with zone: NSZone? = nil) -> Any {
+        let copyObject = VirtualObject(allowedAlignment: allowedAlignment,
+                                       anchor: anchor,
+                                       raycast: raycast,
+                                       shouldUpdateAnchor: shouldUpdateAnchor,
+                                       isPlaced: isPlaced,
+                                       objectType: objectType)
+        copyObject.geometry = self.geometry
+        copyObject.name = self.name
+        copyObject.scale = self.scale
+        
+        return copyObject
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError()
+    }
+    
 }
