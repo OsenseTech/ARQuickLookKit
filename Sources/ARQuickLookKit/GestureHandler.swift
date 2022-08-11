@@ -278,12 +278,22 @@ public class GestureHandler: NSObject {
     @objc
     private func handlePinchGesture(_ gesture: UIPinchGestureRecognizer) {
         guard !disable else { return }
-        guard let object = gestureEffectObject else { return }
         
         switch gesture.state {
+            case .began:
+                if let object = objectInteracting(with: gesture, in: sceneView) {
+                    gestureEffectObject = object
+                }
+                
             case .changed:
-                object.scaleRatio = Float(gesture.scale) * object.scaleRatio
+                guard let object = gestureEffectObject else { return }
+                
+                object.scaleRatio = object.scaleRatio * Float(gesture.scale)
                 gesture.scale = 1
+                
+            case .ended:
+                gestureEffectObject = nil
+                
             default:
                 break
         }
