@@ -28,7 +28,7 @@ public class GestureHandler: NSObject {
         case pinch
     }
     
-    public init(sceneView: ARSCNView, viewController: ARViewControllerProtocol, gestures: [Gesture]) {
+    public init(sceneView: ARSCNView, viewController: ARViewControllerProtocol, gestures: [Gesture] = [.tap, .pan, .rotate, .pinch]) {
         self.sceneView = sceneView
         self.viewController = viewController
         self.gestures = gestures
