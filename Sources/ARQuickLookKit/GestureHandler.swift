@@ -184,7 +184,7 @@ public class GestureHandler: NSObject {
         let hitTestResults = sceneView.hitTest(point, options: hitTestOptions)
         
         return hitTestResults.lazy.compactMap { result in
-            return VirtualObject.existingObjectContainingNode(result.node)
+            VirtualObject.existingObjectContainingNode(result.node)
         }.first
     }
     
