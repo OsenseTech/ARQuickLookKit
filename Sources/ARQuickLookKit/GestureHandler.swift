@@ -189,27 +189,32 @@ public class GestureHandler: NSObject {
     }
     
     private func translate(_ object: VirtualObjectProtocol, basedOn screenPos: CGPoint) {
+        weak var _self = self
+        
+        func createRaycastAndUpdate3DPosition(of virtualObject: VirtualObjectProtocol, from query: ARRaycastQuery) {
+            guard let result = _self?.sceneView.session.raycast(query).first else { return }
+            
+            if virtualObject.allowedAlignment == .any {
+                guard let gestureEffectObject = _self?.gestureEffectObject else { return }
+                guard virtualObject == gestureEffectObject else { return }
+                
+                // If an object that's aligned to a surface is being dragged, then
+                // smoothen its orientation to avoid visible jumps, and apply only the translation directly.
+                virtualObject.simdWorldPosition = result.worldTransform.translation
+                
+                let previousOrientation = virtualObject.simdWorldTransform.orientation
+                let currentOrientation = result.worldTransform.orientation
+                virtualObject.simdWorldOrientation = simd_slerp(previousOrientation, currentOrientation, 0.1)
+            } else {
+                _self?.setPosition(of: virtualObject, with: result)
+            }
+        }
+        
         object.stopTrackedRaycast()
         
         // Update the object by using a one-time position request.
         if let query = sceneView.raycastQuery(from: screenPos, allowing: .estimatedPlane, alignment: object.allowedAlignment) {
             createRaycastAndUpdate3DPosition(of: object, from: query)
-        }
-    }
-    
-    private func createRaycastAndUpdate3DPosition(of virtualObject: VirtualObject, from query: ARRaycastQuery) {
-        guard let result = sceneView.session.raycast(query).first else { return }
-        
-        if virtualObject.allowedAlignment == .any {
-            // If an object that's aligned to a surface is being dragged, then
-            // smoothen its orientation to avoid visible jumps, and apply only the translation directly.
-            virtualObject.simdWorldPosition = result.worldTransform.translation
-            
-            let previousOrientation = virtualObject.simdWorldTransform.orientation
-            let currentOrientation = result.worldTransform.orientation
-            virtualObject.simdWorldOrientation = simd_slerp(previousOrientation, currentOrientation, 0.1)
-        } else {
-            self.setPosition(of: virtualObject, with: result)
         }
     }
     
