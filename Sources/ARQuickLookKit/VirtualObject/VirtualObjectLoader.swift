@@ -17,13 +17,13 @@ public class VirtualObjectLoader {
     
     public var loadedObjectTable: [String: Int] = [:]
     
-    public var loadedObjects: [VirtualObject] = []
+    public var loadedObjects: [VirtualObjectProtocol] = []
     
     public init(sceneView: SCNSceneRenderer) {
         self.sceneView = sceneView
     }
     
-    public func loadVirtualObject(_ object: VirtualObject, loadedHandler: @escaping (Result<VirtualObject, LoadObjectError>) -> Void) {
+    public func loadVirtualObject(_ object: VirtualReferenceObject, loadedHandler: @escaping (Result<VirtualReferenceObject, LoadObjectError>) -> Void) {
         if object.isLoaded {
             return loadedHandler(.success(object))
         }
@@ -39,7 +39,7 @@ public class VirtualObjectLoader {
         }
     }
     
-    public func loadVirtualObject(_ object: VirtualObject, key: String) {
+    public func loadVirtualObject(_ object: VirtualReferenceObject, key: String) {
         loadObject(object) { result in
             if case let .success(object) = result {
                 self.loadedObjects.append(object)
@@ -48,7 +48,7 @@ public class VirtualObjectLoader {
         }
     }
     
-    private func loadObject(_ object: VirtualObject, loadedHandler: @escaping (Result<VirtualObject, LoadObjectError>) -> Void) {
+    private func loadObject(_ object: VirtualReferenceObject, loadedHandler: @escaping (Result<VirtualReferenceObject, LoadObjectError>) -> Void) {
         // Load the content into the reference node.
         DispatchQueue.global(qos: .userInitiated).async {
             object.load()
@@ -72,7 +72,7 @@ public class VirtualObjectLoader {
         }
     }
     
-    public func getObject(for key: String) -> VirtualObject? {
+    public func getObject(for key: String) -> VirtualObjectProtocol? {
         guard let index = loadedObjectTable[key] else { return nil }
         let object = loadedObjects[index]
         

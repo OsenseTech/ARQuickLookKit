@@ -12,7 +12,7 @@ public class GestureHandler: NSObject {
     private let sceneView: ARSCNView
     private let viewController: ARViewControllerProtocol
     private let gestures: [Gesture]
-    public var disable: Bool = false
+    public var isEnable: Bool = true
     
     public enum Gesture {
         /// 點擊改變位置
@@ -28,7 +28,7 @@ public class GestureHandler: NSObject {
         case pinch
     }
     
-    public init(sceneView: ARSCNView, viewController: ARViewControllerProtocol, gestures: [Gesture]) {
+    public init(sceneView: ARSCNView, viewController: ARViewControllerProtocol, gestures: [Gesture] = [.tap, .pan, .rotate, .pinch]) {
         self.sceneView = sceneView
         self.viewController = viewController
         self.gestures = gestures
@@ -86,26 +86,7 @@ public class GestureHandler: NSObject {
     
     @objc
     private func handleTapGesture(_ sender: UITapGestureRecognizer) {
-        guard !disable else { return }
-        guard let object = viewController.virtualObjectLoader.loadedObjects.last else { return }
-        
-        let touchLocation = sender.location(in: sceneView)
-        
-        if object.isLoaded {
-            placeVirtualObject(object, at: touchLocation)
-        } else {
-            self.viewController.virtualObjectLoader.loadVirtualObject(object) { result in
-                switch result {
-                    case let .success(object):
-                        placeVirtualObject(object, at: touchLocation)
-                        
-                    case let .failure(error):
-                        print(error.localizedDescription)
-                }
-            }
-        }
-        
-        func placeVirtualObject(_ object: VirtualObject, at position: CGPoint) {
+        func placeVirtualObject(_ object: VirtualObjectProtocol, at position: CGPoint) {
             object.stopTrackedRaycast()
             
             if let query = sceneView.raycastQuery(from: position, allowing: .estimatedPlane, alignment: object.allowedAlignment),
@@ -119,18 +100,26 @@ public class GestureHandler: NSObject {
                 }
             }
         }
+        
+        guard isEnable else { return }
+        
+        let touchLocation = sender.location(in: sceneView)
+        
+        for object in viewController.virtualObjectLoader.loadedObjects {
+            placeVirtualObject(object, at: touchLocation)
+        }
     }
         
     // MARK: - PanGesture
     
-    private var gestureEffectObject: VirtualObject?
+    private var gestureEffectObject: VirtualObjectProtocol?
     
     /// The tracked screen position used to update the `trackedObject`'s position.
     private var currentTrackingPosition: CGPoint?
     
     @objc
     private func didPan(_ gesture: ThresholdPanGesture) {
-        guard !disable else { return }
+        guard isEnable else { return }
         
         switch gesture.state {
             case .began:
@@ -171,7 +160,7 @@ public class GestureHandler: NSObject {
      gestures, the method makes it more likely that the user touch affects the intended object.
      - Tag: TouchTesting
      */
-    private func objectInteracting(with gesture: UIGestureRecognizer, in view: ARSCNView) -> VirtualObject? {
+    private func objectInteracting(with gesture: UIGestureRecognizer, in view: ARSCNView) -> VirtualObjectProtocol? {
         for index in 0..<gesture.numberOfTouches {
             let touchLocation = gesture.location(ofTouch: index, in: view)
             
@@ -190,16 +179,37 @@ public class GestureHandler: NSObject {
     }
     
     /// Hit tests against the `sceneView` to find an object at the provided point.
-    private func virtualObject(at point: CGPoint) -> VirtualObject? {
+    private func virtualObject(at point: CGPoint) -> VirtualObjectProtocol? {
         let hitTestOptions: [SCNHitTestOption: Any] = [.boundingBoxOnly: true]
         let hitTestResults = sceneView.hitTest(point, options: hitTestOptions)
         
         return hitTestResults.lazy.compactMap { result in
-            return VirtualObject.existingObjectContainingNode(result.node)
+            VirtualObject.existingObjectContainingNode(result.node)
         }.first
     }
     
-    private func translate(_ object: VirtualObject, basedOn screenPos: CGPoint) {
+    private func translate(_ object: VirtualObjectProtocol, basedOn screenPos: CGPoint) {
+        weak var _self = self
+        
+        func createRaycastAndUpdate3DPosition(of virtualObject: VirtualObjectProtocol, from query: ARRaycastQuery) {
+            guard let result = _self?.sceneView.session.raycast(query).first else { return }
+            
+            if virtualObject.allowedAlignment == .any {
+                guard let gestureEffectObject = _self?.gestureEffectObject else { return }
+                guard virtualObject == gestureEffectObject else { return }
+                
+                // If an object that's aligned to a surface is being dragged, then
+                // smoothen its orientation to avoid visible jumps, and apply only the translation directly.
+                virtualObject.simdWorldPosition = result.worldTransform.translation
+                
+                let previousOrientation = virtualObject.simdWorldTransform.orientation
+                let currentOrientation = result.worldTransform.orientation
+                virtualObject.simdWorldOrientation = simd_slerp(previousOrientation, currentOrientation, 0.1)
+            } else {
+                _self?.setPosition(of: virtualObject, with: result)
+            }
+        }
+        
         object.stopTrackedRaycast()
         
         // Update the object by using a one-time position request.
@@ -208,23 +218,7 @@ public class GestureHandler: NSObject {
         }
     }
     
-    private func createRaycastAndUpdate3DPosition(of virtualObject: VirtualObject, from query: ARRaycastQuery) {
-        guard let result = sceneView.session.raycast(query).first else { return }
-        
-        if virtualObject.allowedAlignment == .any {
-            // If an object that's aligned to a surface is being dragged, then
-            // smoothen its orientation to avoid visible jumps, and apply only the translation directly.
-            virtualObject.simdWorldPosition = result.worldTransform.translation
-            
-            let previousOrientation = virtualObject.simdWorldTransform.orientation
-            let currentOrientation = result.worldTransform.orientation
-            virtualObject.simdWorldOrientation = simd_slerp(previousOrientation, currentOrientation, 0.1)
-        } else {
-            self.setPosition(of: virtualObject, with: result)
-        }
-    }
-    
-    private func updatedTrackingPosition(for object: VirtualObject, from gesture: UIPanGestureRecognizer) -> CGPoint {
+    private func updatedTrackingPosition(for object: VirtualObjectProtocol, from gesture: UIPanGestureRecognizer) -> CGPoint {
         let translation = gesture.translation(in: sceneView)
         
         let currentPosition = currentTrackingPosition ?? CGPoint(sceneView.projectPoint(object.position))
@@ -233,7 +227,7 @@ public class GestureHandler: NSObject {
         return updatedPosition
     }
     
-    private func setDown(_ object: VirtualObject, basedOn screenPos: CGPoint) {
+    private func setDown(_ object: VirtualObjectProtocol, basedOn screenPos: CGPoint) {
         object.stopTrackedRaycast()
         
         // Prepare to update the object's anchor to the current location.
@@ -261,7 +255,7 @@ public class GestureHandler: NSObject {
      - Tag: didRotate */
     @objc
     private func didRotate(_ gesture: UIRotationGestureRecognizer) {
-        guard !disable else { return }
+        guard isEnable else { return }
         guard gesture.state == .changed else { return }
         
         gestureEffectObject?.objectRotation -= Float(gesture.rotation)
@@ -277,13 +271,23 @@ public class GestureHandler: NSObject {
     
     @objc
     private func handlePinchGesture(_ gesture: UIPinchGestureRecognizer) {
-        guard !disable else { return }
-        guard let object = gestureEffectObject else { return }
+        guard isEnable else { return }
         
         switch gesture.state {
+            case .began:
+                if let object = objectInteracting(with: gesture, in: sceneView) {
+                    gestureEffectObject = object
+                }
+                
             case .changed:
-                object.scaleRatio = Float(gesture.scale) * object.scaleRatio
+                guard let object = gestureEffectObject else { return }
+                
+                object.scaleRatio = object.scaleRatio * Float(gesture.scale)
                 gesture.scale = 1
+                
+            case .ended:
+                gestureEffectObject = nil
+                
             default:
                 break
         }
@@ -291,14 +295,14 @@ public class GestureHandler: NSObject {
     
     // MARK: - Set Position
     
-    private func createTrackedRaycastAndSet3DPosition(of object: VirtualObject, from query: ARRaycastQuery) -> ARTrackedRaycast? {
+    private func createTrackedRaycastAndSet3DPosition(of object: VirtualObjectProtocol, from query: ARRaycastQuery) -> ARTrackedRaycast? {
         return sceneView.session.trackedRaycast(query) { [weak self] (results) in
             guard let self = self else { return }
             self.setVirtualObject3DPosition(results, with: object)
         }
     }
     
-    private func setVirtualObject3DPosition(_ results: [ARRaycastResult], with object: VirtualObject) {
+    private func setVirtualObject3DPosition(_ results: [ARRaycastResult], with object: VirtualObjectProtocol) {
         guard let result = results.first else {
             fatalError("Unexpected case: the update handler is always supposed to return at least one result.")
         }
@@ -318,13 +322,13 @@ public class GestureHandler: NSObject {
         }
     }
     
-    private func setPosition(of object: VirtualObject, with result: ARRaycastResult) {
+    private func setPosition(of object: VirtualObjectProtocol, with result: ARRaycastResult) {
         object.position = SCNVector3(x: result.worldTransform.columns.3.x,
                                      y: result.worldTransform.columns.3.y,
                                      z: result.worldTransform.columns.3.z)
     }
     
-    func addOrUpdateAnchor(for object: VirtualObject) {
+    func addOrUpdateAnchor(for object: VirtualObjectProtocol) {
         if let anchor = object.anchor {
             sceneView.session.remove(anchor: anchor)
         }
