@@ -86,25 +86,6 @@ public class GestureHandler: NSObject {
     
     @objc
     private func handleTapGesture(_ sender: UITapGestureRecognizer) {
-        guard !disable else { return }
-        guard let object = viewController.virtualObjectLoader.loadedObjects.last else { return }
-        
-        let touchLocation = sender.location(in: sceneView)
-        
-        if object.isLoaded {
-            placeVirtualObject(object, at: touchLocation)
-        } else {
-            self.viewController.virtualObjectLoader.loadVirtualObject(object) { result in
-                switch result {
-                    case let .success(object):
-                        placeVirtualObject(object, at: touchLocation)
-                        
-                    case let .failure(error):
-                        print(error.localizedDescription)
-                }
-            }
-        }
-        
         func placeVirtualObject(_ object: VirtualObjectProtocol, at position: CGPoint) {
             object.stopTrackedRaycast()
             
@@ -118,6 +99,14 @@ public class GestureHandler: NSObject {
                     self.addOrUpdateAnchor(for: object)
                 }
             }
+        }
+        
+        guard isEnable else { return }
+        
+        let touchLocation = sender.location(in: sceneView)
+        
+        for object in viewController.virtualObjectLoader.loadedObjects {
+            placeVirtualObject(object, at: touchLocation)
         }
     }
         
