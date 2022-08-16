@@ -55,6 +55,7 @@ public class VirtualObject: SCNNode, VirtualObjectProtocol {
         copyObject.geometry = self.geometry
         copyObject.name = self.name
         copyObject.scale = self.scale
+        copyObject.eulerAngles = self.eulerAngles
         
         return copyObject
     }
