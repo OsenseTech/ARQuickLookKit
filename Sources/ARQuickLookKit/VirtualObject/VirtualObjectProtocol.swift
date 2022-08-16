@@ -13,7 +13,7 @@ public enum ObjectType {
     case light
 }
 
-public protocol VirtualObjectProtocol: SCNNode {
+public protocol VirtualObjectProtocol where Self: SCNNode {
     /// The alignments that are allowed for a virtual object.
     var allowedAlignment: ARRaycastQuery.TargetAlignment { get }
     
