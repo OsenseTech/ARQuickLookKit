@@ -30,36 +30,6 @@ public class VirtualObject: SCNNode, VirtualObjectProtocol {
         self.geometry = geometry
     }
     
-    public init(allowedAlignment: ARRaycastQuery.TargetAlignment,
-                anchor: ARAnchor?,
-                raycast: ARTrackedRaycast?,
-                shouldUpdateAnchor: Bool,
-                isPlaced: Bool,
-                objectType: ObjectType) {
-        self.allowedAlignment = allowedAlignment
-        self.anchor = anchor
-        self.raycast = raycast
-        self.shouldUpdateAnchor = shouldUpdateAnchor
-        self.isPlaced = isPlaced
-        self.objectType = objectType
-        super.init()
-    }
-    
-    public override func copy(with zone: NSZone? = nil) -> Any {
-        let copyObject = VirtualObject(allowedAlignment: allowedAlignment,
-                                       anchor: anchor,
-                                       raycast: raycast,
-                                       shouldUpdateAnchor: shouldUpdateAnchor,
-                                       isPlaced: isPlaced,
-                                       objectType: objectType)
-        copyObject.geometry = self.geometry
-        copyObject.name = self.name
-        copyObject.scale = self.scale
-        copyObject.eulerAngles = self.eulerAngles
-        
-        return copyObject
-    }
-    
     public required init?(coder aDecoder: NSCoder) {
         fatalError()
     }
