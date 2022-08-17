@@ -38,6 +38,8 @@ public protocol VirtualObjectProtocol where Self: SCNNode {
     
     var timer: Timer? { get set }
     
+    var playerLooper: AVPlayerLooper? { get set }
+    
     func stopTrackedRaycast()
     
     /// Returns a `VirtualObject` if one exists as an ancestor to the provided node.

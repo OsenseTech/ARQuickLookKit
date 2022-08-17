@@ -24,6 +24,8 @@ public class VirtualObject: SCNNode, VirtualObjectProtocol {
     
     public var timer: Timer?
     
+    public var playerLooper: AVPlayerLooper?
+    
     public init(geometry: SCNGeometry?, allowedAlignment: ARRaycastQuery.TargetAlignment, objectType: ObjectType = .object) {
         self.allowedAlignment = allowedAlignment
         self.objectType = objectType
