@@ -36,6 +36,8 @@ public protocol VirtualObjectProtocol where Self: SCNNode {
     
     var objectType: ObjectType { get set }
     
+    var timer: Timer? { get set }
+    
     func stopTrackedRaycast()
     
     /// Returns a `VirtualObject` if one exists as an ancestor to the provided node.
@@ -59,6 +61,11 @@ public extension VirtualObjectProtocol {
                 node.eulerAngles.y = newValue
             }
         }
+    }
+    
+    func invalidTimer() {
+        timer?.invalidate()
+        timer = nil
     }
     
     func stopTrackedRaycast() {

@@ -22,6 +22,8 @@ public class VirtualObject: SCNNode, VirtualObjectProtocol {
     
     public var objectType: ObjectType
     
+    public var timer: Timer?
+    
     public init(geometry: SCNGeometry?, allowedAlignment: ARRaycastQuery.TargetAlignment, objectType: ObjectType = .object) {
         self.allowedAlignment = allowedAlignment
         self.objectType = objectType
@@ -32,6 +34,10 @@ public class VirtualObject: SCNNode, VirtualObjectProtocol {
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError()
+    }
+    
+    deinit {
+        invalidTimer()
     }
     
 }

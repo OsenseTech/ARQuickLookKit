@@ -22,6 +22,8 @@ public class VirtualReferenceObject: SCNReferenceNode, VirtualObjectProtocol {
     
     public var objectType: ObjectType
     
+    public var timer: Timer?
+    
     public init?(url: URL, allowedAlignment: ARRaycastQuery.TargetAlignment, objectType: ObjectType = .object) {
         self.allowedAlignment = allowedAlignment
         self.objectType = objectType
@@ -33,6 +35,8 @@ public class VirtualReferenceObject: SCNReferenceNode, VirtualObjectProtocol {
         fatalError()
     }
     
+    deinit {
+        invalidTimer()
     }
     
 }
