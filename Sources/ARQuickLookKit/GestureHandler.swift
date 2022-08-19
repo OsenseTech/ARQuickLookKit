@@ -11,7 +11,7 @@ public class GestureHandler: NSObject {
     
     private let sceneView: ARSCNView
     private let viewController: ARViewControllerProtocol
-    private let gestures: [Gesture]
+    private let supportedGestures: [Gesture]
     public var isEnable: Bool = true
     
     public enum Gesture {
@@ -28,10 +28,9 @@ public class GestureHandler: NSObject {
         case pinch
     }
     
-    public init(sceneView: ARSCNView, viewController: ARViewControllerProtocol, gestures: [Gesture] = [.tap, .pan, .rotate, .pinch]) {
-        self.sceneView = sceneView
+    public init(viewController: ARViewControllerProtocol, supportedGestures: [Gesture] = [.tap, .pan, .rotate, .pinch]) {
         self.viewController = viewController
-        self.gestures = gestures
+        self.supportedGestures = supportedGestures
         super.init()
         
         setup()
@@ -44,16 +43,16 @@ public class GestureHandler: NSObject {
     }
     
     private func setupGesture() {
-        if gestures.contains(.tap) {
+        if supportedGestures.contains(.tap) {
             setupTapGesture()
         }
-        if gestures.contains(.pan) {
+        if supportedGestures.contains(.pan) {
             setupPanGestureRecognizer()
         }
-        if gestures.contains(.rotate) {
+        if supportedGestures.contains(.rotate) {
             setupRotateGestureRecognizer()
         }
-        if gestures.contains(.pinch) {
+        if supportedGestures.contains(.pinch) {
             setupPinchGestureRecognizer()
         }
         
