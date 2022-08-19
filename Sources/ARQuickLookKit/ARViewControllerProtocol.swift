@@ -6,8 +6,9 @@
 //
 
 import ARKit
+import UIKit
 
-public protocol ARViewControllerProtocol {
+public protocol ARViewControllerProtocol where Self: UIViewController {
     var sceneView: ARSCNView { get set }
     var virtualObjectLoader: VirtualObjectLoader { get set }
     var gestureHandler: GestureHandler { get set }
