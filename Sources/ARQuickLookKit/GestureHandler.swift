@@ -7,11 +7,17 @@
 
 import ARKit
 
+public protocol GestureHandlerDelegate: AnyObject {
+    func updatedTrackingPosition(_ position: CGPoint)
+}
+
 public class GestureHandler: NSObject {
+    
+    public weak var delegate: GestureHandlerDelegate?
+    public var isEnable: Bool = true
     
     private weak var viewController: ARViewControllerProtocol?
     private let supportedGestures: [Gesture]
-    public var isEnable: Bool = true
     
     public enum Gesture {
         /// 點擊改變位置
@@ -138,7 +144,9 @@ public class GestureHandler: NSObject {
             case .changed where gesture.isThresholdExceeded:
                 guard let object = gestureEffectObject else { return }
                 // Move an object if the displacment threshold has been met.
-                translate(object, basedOn: updatedTrackingPosition(for: object, from: gesture))
+                let position = updatedTrackingPosition(for: object, from: gesture)
+                translate(object, basedOn: position)
+                delegate?.updatedTrackingPosition(position)
                 
                 gesture.setTranslation(.zero, in: sceneView)
                 
@@ -196,7 +204,7 @@ public class GestureHandler: NSObject {
         }.first
     }
     
-    private func translate(_ object: VirtualObjectProtocol, basedOn screenPos: CGPoint) {
+    public func translate(_ object: VirtualObjectProtocol, basedOn screenPos: CGPoint) {
         weak var _self = self
         
         func createRaycastAndUpdate3DPosition(of virtualObject: VirtualObjectProtocol, from query: ARRaycastQuery) {
