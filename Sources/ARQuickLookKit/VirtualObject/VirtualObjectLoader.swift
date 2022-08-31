@@ -13,26 +13,13 @@ public class VirtualObjectLoader {
         case sceneViewPrepareFailed
     }
     
-    private let sceneView: SCNSceneRenderer
     public var loadedObjects: [any VirtualObjectProtocol] = []
     
     public var loadedObjectTable: [String: Int] = [:]
+    public var isLoading = false
     
+    public init() { }
     
-    public init(sceneView: SCNSceneRenderer) {
-        self.sceneView = sceneView
-    }
-    
-    public func loadVirtualObject(_ object: VirtualReferenceObject, loadedHandler: @escaping (Result<VirtualReferenceObject, LoadObjectError>) -> Void) {
-        loadObject(object) { result in
-            switch result {
-                case let .success(object):
-                    self.loadedObjects.append(object)
-                    loadedHandler(.success(object))
-                case let .failure(error):
-                    loadedHandler(.failure(error))
-            }
-        }
     }
     
     public func loadVirtualObject(_ object: VirtualReferenceObject, key: String) {
@@ -43,28 +30,15 @@ public class VirtualObjectLoader {
             }
         }
     }
-    
-    private func loadObject(_ object: VirtualReferenceObject, loadedHandler: @escaping (Result<VirtualReferenceObject, LoadObjectError>) -> Void) {
+    public func loadVirtualObject(_ object: VirtualReferenceObject, loadedHandler: @escaping (VirtualReferenceObject) -> Void) {
+        isLoading = true
+        loadedObjects.append(object)
+        
         // Load the content into the reference node.
         DispatchQueue.global(qos: .userInitiated).async {
             object.load()
-            
-            let scene: SCNScene
-            do {
-                scene = try SCNScene(url: object.referenceURL, options: nil)
-            } catch {
-                fatalError("Failed to load SCNScene from object.referenceURL")
-            }
-            
-            self.sceneView.prepare([scene]) { success in
-                DispatchQueue.main.async {
-                    if success {
-                        loadedHandler(.success(object))
-                    } else {
-                        loadedHandler(.failure(.sceneViewPrepareFailed))
-                    }
-                }
-            }
+            self.isLoading = false
+            loadedHandler(object)
         }
     }
     

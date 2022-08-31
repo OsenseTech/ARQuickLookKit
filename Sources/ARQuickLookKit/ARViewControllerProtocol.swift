@@ -49,11 +49,27 @@ extension ARViewControllerProtocol {
         
         if let object = object as? VirtualReferenceObject {
             if object.isLoaded {
-                setObject(object, position: position)
+                do {
+                    let scene = try SCNScene(url: object.referenceURL, options: nil)
+                    self.sceneView.prepare([scene]) { _ in
+                        DispatchQueue.main.async {
+                            setObject(object, position: position)
+                        }
+                    }
+                } catch {
+                    
+                }
             } else {
-                virtualObjectLoader.loadVirtualObject(object) { result in
-                    if case .success(_) = result {
-                        setObject(object, position: position)
+                virtualObjectLoader.loadVirtualObject(object) { object in
+                    do {
+                        let scene = try SCNScene(url: object.referenceURL, options: nil)
+                        self.sceneView.prepare([scene]) { _ in
+                            DispatchQueue.main.async {
+                                setObject(object, position: position)
+                            }
+                        }
+                    } catch {
+                        
                     }
                 }
             }
