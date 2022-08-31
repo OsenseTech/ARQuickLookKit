@@ -19,6 +19,8 @@ public class VirtualObjectLoader {
     
     public init() { }
     
+    deinit {
+        removeAllVirtualObject()
     }
     
     public func loadVirtualObject(_ object: VirtualReferenceObject, loadedHandler: @escaping (VirtualReferenceObject) -> Void) {
@@ -33,7 +35,24 @@ public class VirtualObjectLoader {
         }
     }
     
+    public func removeAllVirtualObject() {
+        for index in loadedObjects.indices.reversed() {
+            removeVirtualObject(at: index)
+        }
+    }
+    
+    public func removeVirtualObject(at index: Int) {
+        guard loadedObjects.indices.contains(index) else { return }
         
+        loadedObjects[index].stopTrackedRaycast()
+        loadedObjects[index].removeFromParentNode()
+        
+        // Recoup resources allocated by the object.
+        if let object = loadedObjects[index] as? VirtualReferenceObject {
+            object.unload()
+        }
+        
+        loadedObjects.remove(at: index)
     }
     
 }
