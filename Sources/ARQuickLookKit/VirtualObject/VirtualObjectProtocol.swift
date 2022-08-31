@@ -43,9 +43,8 @@ public protocol VirtualObjectProtocol where Self: SCNNode {
     func stopTrackedRaycast()
     
     /// Returns a `VirtualObject` if one exists as an ancestor to the provided node.
-    static func existingObjectContainingNode(_ node: SCNNode) -> VirtualObjectProtocol?
+    static func existingObjectContainingNode(_ node: SCNNode) -> (any VirtualObjectProtocol)?
 }
-
 
 public extension VirtualObjectProtocol {
     
@@ -75,8 +74,8 @@ public extension VirtualObjectProtocol {
         raycast = nil
     }
     
-    static func existingObjectContainingNode(_ node: SCNNode) -> VirtualObjectProtocol? {
-        if let virtualObjectRoot = node as? VirtualObjectProtocol {
+    static func existingObjectContainingNode(_ node: SCNNode) -> (any VirtualObjectProtocol)? {
+        if let virtualObjectRoot = node as? (any VirtualObjectProtocol) {
             return virtualObjectRoot
         }
         

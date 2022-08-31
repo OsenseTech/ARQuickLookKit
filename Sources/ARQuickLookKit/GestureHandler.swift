@@ -96,7 +96,7 @@ public class GestureHandler: NSObject {
     private func handleTapGesture(_ sender: UITapGestureRecognizer) {
         weak var _self = self
         
-        func placeVirtualObject(_ object: VirtualObjectProtocol, at position: CGPoint) {
+        func placeVirtualObject(_ object: any VirtualObjectProtocol, at position: CGPoint) {
             object.stopTrackedRaycast()
             guard let sceneView = _self?.viewController?.sceneView else { return }
             
@@ -124,7 +124,7 @@ public class GestureHandler: NSObject {
         
     // MARK: - PanGesture
     
-    private var gestureEffectObject: VirtualObjectProtocol?
+    private var gestureEffectObject: (any VirtualObjectProtocol)?
     
     /// The tracked screen position used to update the `trackedObject`'s position.
     private var currentTrackingPosition: CGPoint?
@@ -175,7 +175,7 @@ public class GestureHandler: NSObject {
      gestures, the method makes it more likely that the user touch affects the intended object.
      - Tag: TouchTesting
      */
-    private func objectInteracting(with gesture: UIGestureRecognizer, in view: ARSCNView) -> VirtualObjectProtocol? {
+    private func objectInteracting(with gesture: UIGestureRecognizer, in view: ARSCNView) -> (any VirtualObjectProtocol)? {
         for index in 0..<gesture.numberOfTouches {
             let touchLocation = gesture.location(ofTouch: index, in: view)
             
@@ -194,7 +194,7 @@ public class GestureHandler: NSObject {
     }
     
     /// Hit tests against the `sceneView` to find an object at the provided point.
-    private func virtualObject(at point: CGPoint) -> VirtualObjectProtocol? {
+    private func virtualObject(at point: CGPoint) -> (any VirtualObjectProtocol)? {
         let hitTestOptions: [SCNHitTestOption: Any] = [.boundingBoxOnly: true]
         guard let sceneView = viewController?.sceneView else { return nil }
         let hitTestResults = sceneView.hitTest(point, options: hitTestOptions)
@@ -204,10 +204,10 @@ public class GestureHandler: NSObject {
         }.first
     }
     
-    public func translate(_ object: VirtualObjectProtocol, basedOn screenPos: CGPoint) {
+    public func translate(_ object: any VirtualObjectProtocol, basedOn screenPos: CGPoint) {
         weak var _self = self
         
-        func createRaycastAndUpdate3DPosition(of virtualObject: VirtualObjectProtocol, from query: ARRaycastQuery) {
+        func createRaycastAndUpdate3DPosition(of virtualObject: any VirtualObjectProtocol, from query: ARRaycastQuery) {
             guard let result = _self?.viewController?.sceneView.session.raycast(query).first else { return }
             
             if virtualObject.allowedAlignment == .any {
@@ -235,7 +235,7 @@ public class GestureHandler: NSObject {
         }
     }
     
-    private func updatedTrackingPosition(for object: VirtualObjectProtocol, from gesture: UIPanGestureRecognizer) -> CGPoint {
+    private func updatedTrackingPosition(for object: any VirtualObjectProtocol, from gesture: UIPanGestureRecognizer) -> CGPoint {
         guard let sceneView = viewController?.sceneView else { fatalError() }
         let translation = gesture.translation(in: sceneView)
         
@@ -245,7 +245,7 @@ public class GestureHandler: NSObject {
         return updatedPosition
     }
     
-    private func setDown(_ object: VirtualObjectProtocol, basedOn screenPos: CGPoint) {
+    private func setDown(_ object: any VirtualObjectProtocol, basedOn screenPos: CGPoint) {
         object.stopTrackedRaycast()
         
         // Prepare to update the object's anchor to the current location.
@@ -315,7 +315,7 @@ public class GestureHandler: NSObject {
     
     // MARK: - Set Position
     
-    private func createTrackedRaycastAndSet3DPosition(of object: VirtualObjectProtocol, from query: ARRaycastQuery) -> ARTrackedRaycast? {
+    private func createTrackedRaycastAndSet3DPosition(of object: any VirtualObjectProtocol, from query: ARRaycastQuery) -> ARTrackedRaycast? {
         guard let sceneView = viewController?.sceneView else { return nil }
         
         return sceneView.session.trackedRaycast(query) { [weak self] (results) in
@@ -324,7 +324,7 @@ public class GestureHandler: NSObject {
         }
     }
     
-    private func setVirtualObject3DPosition(_ results: [ARRaycastResult], with object: VirtualObjectProtocol) {
+    private func setVirtualObject3DPosition(_ results: [ARRaycastResult], with object: any VirtualObjectProtocol) {
         guard let result = results.first else {
             fatalError("Unexpected case: the update handler is always supposed to return at least one result.")
         }
@@ -345,13 +345,13 @@ public class GestureHandler: NSObject {
         }
     }
     
-    private func setPosition(of object: VirtualObjectProtocol, with result: ARRaycastResult) {
+    private func setPosition(of object: any VirtualObjectProtocol, with result: ARRaycastResult) {
         object.position = SCNVector3(x: result.worldTransform.columns.3.x,
                                      y: result.worldTransform.columns.3.y,
                                      z: result.worldTransform.columns.3.z)
     }
     
-    func addOrUpdateAnchor(for object: VirtualObjectProtocol) {
+    func addOrUpdateAnchor(for object: any VirtualObjectProtocol) {
         guard let sceneView = viewController?.sceneView else { return }
         
         if let anchor = object.anchor {

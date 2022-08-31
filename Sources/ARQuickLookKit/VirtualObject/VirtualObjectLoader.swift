@@ -14,10 +14,10 @@ public class VirtualObjectLoader {
     }
     
     private let sceneView: SCNSceneRenderer
+    public var loadedObjects: [any VirtualObjectProtocol] = []
     
     public var loadedObjectTable: [String: Int] = [:]
     
-    public var loadedObjects: [VirtualObjectProtocol] = []
     
     public init(sceneView: SCNSceneRenderer) {
         self.sceneView = sceneView

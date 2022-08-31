@@ -16,7 +16,7 @@ public protocol ARViewControllerProtocol where Self: UIViewController {
 }
 
 extension ARViewControllerProtocol {
-    public func autoPlace(_ object: VirtualObjectProtocol, at anchor: ARAnchor) {
+    public func autoPlace(_ object: any VirtualObjectProtocol, at anchor: ARAnchor) {
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
         guard object.parent == nil else { return }
         
@@ -28,8 +28,8 @@ extension ARViewControllerProtocol {
         place(object, at: position)
     }
     
-    public func place(_ object: VirtualObjectProtocol, at position: SCNVector3) {
-        func setObject(_ object: VirtualObjectProtocol, position: SCNVector3) {
+    public func place(_ object: any VirtualObjectProtocol, at position: SCNVector3) {
+        func setObject(_ object: any VirtualObjectProtocol, position: SCNVector3) {
             object.position = position
             
             if object.parent == nil {
