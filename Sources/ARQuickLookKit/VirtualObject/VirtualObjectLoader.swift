@@ -24,6 +24,11 @@ public class VirtualObjectLoader {
     }
     
     public func loadVirtualObject(_ object: VirtualReferenceObject, loadedHandler: @escaping (VirtualReferenceObject) -> Void) {
+        guard !object.isLoaded else {
+            self.loadedObjects.append(object)
+            return loadedHandler(object)
+        }
+        
         isLoading = true
         loadedObjects.append(object)
         
