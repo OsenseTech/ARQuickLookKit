@@ -30,12 +30,12 @@ public class VirtualObjectLoader {
         }
         
         isLoading = true
-        loadedObjects.append(object)
         
         // Load the content into the reference node.
-        DispatchQueue.global(qos: .userInitiated).async {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             object.load()
-            self.isLoading = false
+            self?.loadedObjects.append(object)
+            self?.isLoading = false
             loadedHandler(object)
         }
     }
